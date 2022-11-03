@@ -20,12 +20,12 @@
 typedef struct _QueueArray AdsQueue;
 
 typedef struct _QueueArrayClass{
-    bool (*push) (AdsQueue* queue,  Buffer* data, bool record);
+    bool (*push) (AdsQueue* queue,  AdsBuffer* data, bool record);
 
     bool (*peek) (AdsQueue* queue);
 
     pointer       (*pop) (AdsQueue* queue, 
-                             Buffer** buf,
+                             AdsBuffer** buf,
                             int* size,
                             bool record);
     AdsQueue* (*init) (int size);

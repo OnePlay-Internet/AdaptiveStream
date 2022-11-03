@@ -77,7 +77,7 @@ render_log(AdsQueue* array)
         }
 
 
-            Buffer* buf;
+            AdsBuffer* buf;
         Err* err = (Err*)QUEUE_ARRAY_CLASS->pop(array,&buf,NULL,false);
 
         char file_log[36] = {" "};

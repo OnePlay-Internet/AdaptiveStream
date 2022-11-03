@@ -46,7 +46,7 @@
  */
 #define BUFFER_MALLOC(x,y,z) pointer z = (pointer)malloc( y );  \
                              memset(z,0,y); \
-                              Buffer* x = BUFFER_INIT(z,y,free) 
+                              AdsBuffer* x = BUFFER_INIT(z,y,free) 
 
 
 /**
@@ -57,29 +57,19 @@
  */
 #define BUFFER_DUPLICATE(x,y,z,ptr) pointer ptr = (pointer)malloc( y );  \
                                     memcpy(ptr,z,y); \
-                                     Buffer* x = BUFFER_INIT(ptr,y,free) \
+                                     AdsBuffer* x = BUFFER_INIT(ptr,y,free) \
 
 
 
 
 typedef void (*BufferFreeFunc) (pointer data);
 
-typedef struct _Buffer Buffer;
+typedef struct _AdsBuffer AdsBuffer;
 
-typedef struct _BufferLL BufferLL;
 
-struct _BufferLL {
-    Buffer* obj;
-
-    BufferLL* next;
-};
-
-typedef void (*InsertAction) ( Buffer* buf,
-                                int index,
-                                int index_total);
 
 typedef struct _BufferClass {
-    pointer (*ref)      (Buffer* obj,
+    pointer (*ref)      (AdsBuffer* obj,
                             int* size
 #ifdef BUFFER_TRACE
                             ,char* file
@@ -87,14 +77,14 @@ typedef struct _BufferClass {
 #endif
                             );
 
-    void    (*unref)    (Buffer* obj
+    void    (*unref)    (AdsBuffer* obj
 #ifdef BUFFER_TRACE
                             ,char* file
                             ,int line
 #endif
                             );
 
-    Buffer* (*init)     (pointer data,
+    AdsBuffer* (*init)     (pointer data,
                             uint size,
                             BufferFreeFunc func
 #ifdef BUFFER_TRACE
@@ -104,11 +94,11 @@ typedef struct _BufferClass {
 #endif
                             );
 
-    Buffer* (*duplicate)(Buffer* obj);
+    AdsBuffer* (*duplicate)(AdsBuffer* obj);
 
-    uint    (*size)     (Buffer* obj);
+    uint    (*size)     (AdsBuffer* obj);
 
-    int64   (*created)(Buffer* obj);
+    int64   (*created)(AdsBuffer* obj);
 } BufferClass;
 
 

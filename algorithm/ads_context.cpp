@@ -59,9 +59,12 @@ typedef struct _AdaptiveContext {
      */
     Record records[1000];
     int record_count;
+
+    /**
+     * @brief 
+     * 
+     */
     std::chrono::high_resolution_clock::time_point prev;
-
-
 
     /**
      * @brief 
@@ -115,7 +118,7 @@ adaptiveThreadListen(AdaptiveContext* context)
         std::this_thread::sleep_for(10ms);
         if (QUEUE_ARRAY_CLASS->peek(context->sink_event_in))
         {
-                Buffer* buf = NULL;
+                AdsBuffer* buf = NULL;
             AdaptiveEvent* event = (AdaptiveEvent*) QUEUE_ARRAY_CLASS->pop(context->sink_event_in,&buf,NULL,true);
 
             switch (event->code)
@@ -136,7 +139,7 @@ adaptiveThreadListen(AdaptiveContext* context)
         
         if (QUEUE_ARRAY_CLASS->peek(context->capture_event_in))
         {
-                Buffer* buf = NULL;
+                AdsBuffer* buf = NULL;
             AdaptiveEvent* event = (AdaptiveEvent*) QUEUE_ARRAY_CLASS->pop(context->capture_event_in,&buf,NULL,true);
 
             switch (event->code)

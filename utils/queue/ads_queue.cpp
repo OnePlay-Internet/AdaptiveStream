@@ -21,6 +21,16 @@ using namespace std::literals;
 
 #include <pthread.h>
 
+
+
+
+typedef struct _BufferLL BufferLL;
+struct _BufferLL {
+    AdsBuffer* obj;
+
+    BufferLL* next;
+};
+
 struct _QueueArray {
     /**
      * @brief 
@@ -47,8 +57,8 @@ struct _QueueArray {
  */
 bool            
 queue_array_push(AdsQueue* queue, 
-                     Buffer* obj,
-                    bool record)
+                 AdsBuffer* obj,
+                 bool record)
 {
     BufferLL* last = (BufferLL*)malloc(sizeof(BufferLL));
     memset(last,0,sizeof(BufferLL));
@@ -104,12 +114,12 @@ queue_array_size(AdsQueue* queue)
 
 pointer
 queue_array_pop(AdsQueue* queue, 
-                 Buffer** buf,
+                  AdsBuffer** buf,
                 int* size,
                 bool record)
 {
     BufferLL* container;
-    Buffer *ret;
+     AdsBuffer *ret;
 
     // lock this
     while(!queue->first || !queue->size) 
@@ -163,7 +173,7 @@ queue_array_finalize(AdsQueue* queue)
 {
     while(queue_array_peek(queue))
     {
-         Buffer* buf;
+        AdsBuffer* buf;
         queue_array_pop(queue,&buf,NULL,false);
 #ifndef MINGW
      BUFFER_CLASS->unref(buf,"\\ads_queue.cpp",__LINE__);

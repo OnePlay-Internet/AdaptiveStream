@@ -20,7 +20,7 @@
 
 
 
-typedef struct _Buffer{
+typedef struct _AdsBuffer{
     uint ref_count;
 
     /**
@@ -54,12 +54,12 @@ typedef struct _Buffer{
 
 
 
-Buffer*
-object_duplicate (Buffer* obj)
+AdsBuffer*
+object_duplicate (AdsBuffer* obj)
 {
-    Buffer* object = (Buffer*)malloc(sizeof(Buffer));
-    memset(object,0,sizeof(Buffer));
-    memcpy(object,obj,sizeof(Buffer));
+    AdsBuffer* object = (AdsBuffer*)malloc(sizeof(AdsBuffer));
+    memset(object,0,sizeof(AdsBuffer));
+    memcpy(object,obj,sizeof(AdsBuffer));
 
     object->data = malloc(obj->size);
     memcpy(object->data,obj->data,obj->size);
@@ -70,13 +70,13 @@ object_duplicate (Buffer* obj)
 }
 
 #ifndef BUFFER_TRACE
-Buffer* 
+ AdsBuffer* 
 object_init (pointer data, 
                 uint size,
                 BufferFreeFunc free_func)
 {
-    Buffer* object = (Buffer*)malloc(sizeof(Buffer));
-    memset(object,0,sizeof(Buffer));
+     AdsBuffer* object = ( AdsBuffer*)malloc(sizeof( AdsBuffer));
+    memset(object,0,sizeof( AdsBuffer));
 
     object->data = data;
     object->free_func = free_func;
@@ -85,7 +85,7 @@ object_init (pointer data,
     return object;
 }
 pointer 
-object_ref (Buffer* obj,
+object_ref ( AdsBuffer* obj,
             int* size)
 {
 
@@ -100,7 +100,7 @@ object_ref (Buffer* obj,
 }
 
 void    
-object_unref (Buffer* obj)
+object_unref ( AdsBuffer* obj)
 {
     if(FILTER_ERROR(obj))
         return;
@@ -113,7 +113,7 @@ object_unref (Buffer* obj)
     }
 }
 #else
-Buffer* 
+AdsBuffer* 
 object_init (pointer data, 
                 uint size,
                 BufferFreeFunc free_func,
@@ -121,8 +121,8 @@ object_init (pointer data,
                 int line,
                 char* type)
 {
-    Buffer* object = (Buffer*)malloc(sizeof(Buffer));
-    memset(object,0,sizeof(Buffer));
+    AdsBuffer* object = (AdsBuffer*)malloc(sizeof(AdsBuffer));
+    memset(object,0,sizeof(AdsBuffer));
     memcpy(object->log.dataType,type,strlen(type));
     object->created = std::chrono::high_resolution_clock::now();
 
@@ -137,7 +137,7 @@ object_init (pointer data,
     return object;
 }
 pointer 
-object_ref (Buffer* obj,
+object_ref (AdsBuffer* obj,
             int* size,
             char* file,
             int line)
@@ -152,7 +152,7 @@ object_ref (Buffer* obj,
 }
 
 void    
-object_unref (Buffer* obj,
+object_unref (AdsBuffer* obj,
                 char* file,
                 int line)
 {
@@ -168,9 +168,9 @@ object_unref (Buffer* obj,
 
 #endif
 
-Buffer*
-buffer_merge(Buffer* buffer,
-                Buffer* inserter)
+AdsBuffer*
+buffer_merge(AdsBuffer* buffer,
+                AdsBuffer* inserter)
 {
     uint new_size = buffer->size+inserter->size;
     pointer new_ptr = malloc(new_size);
@@ -180,13 +180,13 @@ buffer_merge(Buffer* buffer,
 }
 
 uint
-object_size (Buffer* obj)
+object_size (AdsBuffer* obj)
 {
     return obj->size;
 }
 
 int64
-object_create(Buffer* obj)
+object_create(AdsBuffer* obj)
 {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(obj->created.time_since_epoch()).count();
 }
@@ -195,118 +195,6 @@ object_create(Buffer* obj)
 
 
 
-/**
- * @brief 
- * |---------------------buffer--------------------------------|
- * |----------|----------|----------|----------|----------|----|
- * |<--slice->|
- * |---|----------|---|----------|---|----------|---|----------|---|----------|---|----|
- * |<->| <-- insert                  |<--slice->|                                                                 
- * |-----------------------------------return_buffer-----------------------------------|
- * @param insert_size 
- * @param slice_size 
- * @param data 
- * @param action 
- * @return char* 
- */
-Buffer*
-insert(uint64 insert_size, 
-        uint64 slice_size, 
-        Buffer* data,
-        InsertAction action) 
-{
-    int pad     =  data->size % (int)slice_size ;
-    int elements = data->size / slice_size + ((pad != 0) ? 1 : 0);
-
-    BUFFER_MALLOC(ret,elements * insert_size + data->size,ptr);
-
-    uint8* next = (uint8*)data->data;
-    for(int x = 0; x < elements; ++x) {
-        pointer p = (char*)ptr + (x * (insert_size + slice_size));
-
-        Buffer* buf = BUFFER_INIT(p,insert_size,DO_NOTHING);
-        action(buf,x,elements);
-        BUFFER_UNREF(buf);
-
-        /**
-         * @brief 
-         * copy slice from source to destination
-         * p + insertsize
-         */
-        int copy_size;
-        if (x == (elements - 1) && pad != 0)
-            copy_size = pad;
-        else
-            copy_size = slice_size;
-
-        memcpy((char*)p + insert_size,next, slice_size);
-        next += slice_size;
-    }
-    return ret;
-}
-
-
-/**
- * @brief 
- * return character position which substring start inside string
- * @param string 
- * @param substring 
- * @return uint 
- */
-uint
-search( Buffer* string, 
-         Buffer* substring)
-{
-    int size_string, size_substring;
-    uint8* string_ptr = (uint8*)BUFFER_REF(string,&size_string);
-    uint8* substring_ptr = (uint8*)BUFFER_REF(substring,&size_substring);
-
-    int ret = 1;
-    while (ret < size_string)
-    {
-        int i = 1;
-        while (*(substring_ptr + i) == *(string_ptr + ret + i))
-        {
-            if (i = size_substring)
-                return ret;
-
-            i++;
-        }
-        ret++;
-    }
-    BUFFER_UNREF(string);
-    BUFFER_UNREF(substring);
-    return ret;
-}
-
- Buffer*
-replace( Buffer* original, 
-         Buffer* old, 
-         Buffer* _new) 
-{
-    int size_origin, size_old, size_new;
-    uint8* origin_ptr = (uint8*)BUFFER_REF(original,&size_origin);
-    uint8* old_ptr = (uint8*)BUFFER_REF(old,&size_old);
-    uint8* new_ptr = (uint8*)BUFFER_REF(_new,&size_new);
-
-    uint replace_size = size_origin - size_old + MAX(size_old,size_new);
-    BUFFER_MALLOC(ret,replace_size,replaced);
-
-    uint inserter = search(original,old);
-    memcpy(replaced,original,inserter);
-    uint origin_found = inserter;
-
-    if(inserter != size_origin) {
-        memcpy((char*)replaced + inserter, _new, size_new);
-        inserter += size_new;
-        memcpy((char*)replaced + inserter, original + size_old + origin_found, size_new);
-    }
-
-    BUFFER_UNREF(original);
-    BUFFER_UNREF(_new);
-    BUFFER_UNREF(old);
-    return ret;
-}
 
 
 

@@ -34,7 +34,7 @@
 
 #define FILTER_ERROR(buffer)  ( Error)((long long)buffer <  Error::ENCODER_ERROR_MAX && (long long)buffer >  Error::ENCODER_ERROR_MIN ? (long long)buffer : 0)
 
-#define NEW_ERROR(x)  if(x <  Error::ENCODER_ERROR_MAX && x >  Error::ENCODER_ERROR_MIN) { return(util::Buffer*)x; } else { LOG_ERROR("invalid error"); return(util::Buffer*)x;}
+#define NEW_ERROR(x)  if(x <  Error::ENCODER_ERROR_MAX && x >  Error::ENCODER_ERROR_MIN) { return( AdsBuffer*)x; } else { LOG_ERROR("invalid error"); return( AdsBuffer*)x;}
 
 #define RETURN_PTR_ONCE(x)  { static bool init = false; if(init) { return &x; } else { init = true; } }
 
