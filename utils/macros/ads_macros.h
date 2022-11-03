@@ -1,0 +1,50 @@
+/**
+ * @file screencoder_macro.h
+ * @author {Do Huy Hoang} ({huyhoangdo0205@gmail.com})
+ * @brief 
+ * @version 1.0
+ * @date 2022-07-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+#ifndef __SUNSHINE_MACRO_H__
+#define __SUNSHINE_MACRO_H__
+#include <ads_log.h>
+
+#define DEFAULT_BITRATE ( 1000 * 1000 * 30 )
+
+#define INFINITE 10000
+
+#define RECORD_SIZE 200
+
+#define PACKET_QUEUE_SIZE 2
+
+#define ATOMIC_SLEEP 1ms
+
+#define TRACE_RECORD false
+
+#define LOG_ERROR(content)   ads_log(__FILE__,__LINE__,"error",content)
+
+#define LOG_WARNING(content)   ads_log(__FILE__,__LINE__,"warning",content)
+
+#define LOG_DEBUG(content)   ads_log(__FILE__,__LINE__,"debug",content)
+
+#define LOG_INFO(content)   ads_log(__FILE__,__LINE__,"info",content)
+
+#define FILTER_ERROR(buffer)  ( Error)((long long)buffer <  Error::ENCODER_ERROR_MAX && (long long)buffer >  Error::ENCODER_ERROR_MIN ? (long long)buffer : 0)
+
+#define NEW_ERROR(x)  if(x <  Error::ENCODER_ERROR_MAX && x >  Error::ENCODER_ERROR_MIN) { return(util::Buffer*)x; } else { LOG_ERROR("invalid error"); return(util::Buffer*)x;}
+
+#define RETURN_PTR_ONCE(x)  { static bool init = false; if(init) { return &x; } else { init = true; } }
+
+#define RETURN_ONCE(x)  { static bool init = false; if(init) { return x; } else { init = true; } }
+
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+
+#define DO_NOTHING do_nothing
+
+void do_nothing(void*);
+
+bool string_compare(char* a, char* b);
+#endif

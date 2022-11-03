@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        ".env": "properties",
+        "*.env": "ini",
+        "cmath": "cpp",
+        "random": "cpp",
+        "*.tcc": "cpp"
+    }
+}
