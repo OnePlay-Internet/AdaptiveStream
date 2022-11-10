@@ -191,7 +191,7 @@ queue_array_finalize(AdsQueue* queue)
  * 
  */
 AdsQueueClass*
-queue_array_class_init()
+ADS_QUEUE_CLASS_init()
 {
     static AdsQueueClass klass = {0};
     RETURN_PTR_ONCE(klass);

@@ -17,27 +17,27 @@ using namespace std::literals;
 AdsEvent*    
 new_event()
 {
-    return QUEUE_ARRAY_CLASS->init(INFINITE);
+    return ADS_QUEUE_CLASS->init(INFINITE);
 }
 
 void
 destroy_event(AdsEvent* event) 
 {
-    return QUEUE_ARRAY_CLASS->stop(event);
+    return ADS_QUEUE_CLASS->stop(event);
 }
 
 void            
 raise_event(AdsEvent* broadcaster)
 {
     AdsBuffer* obj = BUFFER_INIT((pointer)true,sizeof(bool),DO_NOTHING);
-    QUEUE_ARRAY_CLASS->push(broadcaster,obj,false);
+    ADS_QUEUE_CLASS->push(broadcaster,obj,false);
     BUFFER_UNREF(obj);
 }
 
 bool            
 wait_event(AdsEvent* broadcaster)
 {
-    while (!QUEUE_ARRAY_CLASS->peek(broadcaster)) { 
+    while (!ADS_QUEUE_CLASS->peek(broadcaster)) { 
         std::this_thread::sleep_for(1s); 
     }
     return true;
@@ -46,5 +46,5 @@ wait_event(AdsEvent* broadcaster)
 bool            
 is_invoked(AdsEvent* broadcaster)
 {
-    return QUEUE_ARRAY_CLASS->peek(broadcaster);
+    return ADS_QUEUE_CLASS->peek(broadcaster);
 }

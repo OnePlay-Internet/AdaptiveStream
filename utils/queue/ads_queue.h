@@ -15,7 +15,7 @@
 
 #include <ads_buffer.h>
 
-#define QUEUE_ARRAY_CLASS        queue_array_class_init()
+#define ADS_QUEUE_CLASS        ADS_QUEUE_CLASS_init()
 
 typedef struct _QueueArray AdsQueue;
 
@@ -35,7 +35,7 @@ typedef struct _AdsQueueClass{
     void (*stop) (AdsQueue* queue);
 } AdsQueueClass;
 
-AdsQueueClass*        queue_array_class_init      ();
+AdsQueueClass*        ADS_QUEUE_CLASS_init      ();
 
 
 

@@ -106,9 +106,9 @@ adaptiveThreadListen(AdaptiveContext* context)
         bool has_sink,has_capture = false;
 
         std::this_thread::sleep_for(LISTEN_INTERVAL);
-        if (QUEUE_ARRAY_CLASS->peek(context->sink_record)) {
+        if (ADS_QUEUE_CLASS->peek(context->sink_record)) {
             AdaptiveEvent* event = (AdaptiveEvent*) 
-                QUEUE_ARRAY_CLASS->pop(context->sink_record,&buf,NULL,true);
+                ADS_QUEUE_CLASS->pop(context->sink_record,&buf,NULL,true);
             switch (event->code) {
             case AdaptiveRecordCode::SINK_THREAD_CYCLE:
                 rec.sink_cycle = event->time_data;
@@ -122,9 +122,9 @@ adaptiveThreadListen(AdaptiveContext* context)
             BUFFER_UNREF(buf);
         }
         
-        if (QUEUE_ARRAY_CLASS->peek(context->capture_record)) {
+        if (ADS_QUEUE_CLASS->peek(context->capture_record)) {
             AdaptiveEvent* event = (AdaptiveEvent*) 
-                QUEUE_ARRAY_CLASS->pop(context->capture_record,&buf,NULL,true);
+                ADS_QUEUE_CLASS->pop(context->capture_record,&buf,NULL,true);
             switch (event->code) {
             case AdaptiveRecordCode::CAPTURE_THREAD_CYCLE:
                 rec.capture_cycle = event->time_data;
@@ -138,7 +138,7 @@ adaptiveThreadListen(AdaptiveContext* context)
             BUFFER_UNREF(buf);
         }
 
-        if (QUEUE_ARRAY_CLASS->peek(context->client_record)) {
+        if (ADS_QUEUE_CLASS->peek(context->client_record)) {
 
         }
 

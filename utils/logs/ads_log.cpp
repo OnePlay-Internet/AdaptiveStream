@@ -72,13 +72,13 @@ render_log(AdsQueue* array)
     outfile.open("./log.txt", std::ios_base::app); // append instead of overwrite
     while(true)
     {
-        while(!QUEUE_ARRAY_CLASS->peek(array)) {
+        while(!ADS_QUEUE_CLASS->peek(array)) {
             std::this_thread::sleep_for(50ms);
         }
 
 
             AdsBuffer* buf;
-        Err* err = (Err*)QUEUE_ARRAY_CLASS->pop(array,&buf,NULL,false);
+        Err* err = (Err*)ADS_QUEUE_CLASS->pop(array,&buf,NULL,false);
 
         char file_log[36] = {" "};
         file_log[35] = 0;
@@ -133,7 +133,7 @@ get_log_queue()
 {
     static AdsQueue* ret;
     RETURN_ONCE(ret);
-    ret = QUEUE_ARRAY_CLASS->init(INFINITE);
+    ret = ADS_QUEUE_CLASS->init(INFINITE);
     std::thread render {render_log,ret};
     render.detach();
     return ret;
@@ -181,7 +181,7 @@ void ads_log(char* file,
     memcpy(((Err*)ptr)->time,timestr,strlen(timestr));
     ((Err*)ptr)->line = line;
     ((Err*)ptr)->file = file;
-    QUEUE_ARRAY_CLASS->push(LOG_QUEUE,buf,false);
+    ADS_QUEUE_CLASS->push(LOG_QUEUE,buf,false);
     BUFFER_UNREF(buf);
     return;
 }
