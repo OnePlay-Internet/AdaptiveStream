@@ -13,30 +13,29 @@
 
 #include <ads_util.h>
 
-typedef struct _Record {
-    std::chrono::nanoseconds sink_cycle;
 
-    std::chrono::nanoseconds capture_cycle;
+typedef enum _AdaptiveRecordCode {
+    EVENT_NONE,
 
-    std::chrono::high_resolution_clock::time_point timestamp;
+    CLIENT_BANDWIDTH,
+    CLIENT_RTT,
 
-    uint64 sink_queue_size;
-}Record;
-
+    SINK_THREAD_CYCLE,
+    CAPTURE_THREAD_CYCLE,
+}AdaptiveRecordCode;
 
 typedef enum _AdaptiveEventCode {
-    EVENT_NONE = 0,
+    EVENT_NONE,
 
-    UPDATE_CAPTURE_DELAY_INTERVAL = 2,
-    DISABLE_CAPTURE_DELAY_INTERVAL = 4,
-
-    SINK_CYCLE_REPORT = 8,
-    CAPTURE_CYCLE_REPORT = 16,
-    CAPTURE_TIMEOUT = 32,
-
-    AVCODEC_BITRATE_CHANGE = 64,
-    AVCODEC_FRAMERATE_CHANGE = 128,
+    BITRATE_CHANGE ,
+    FRAMERATE_CHANGE ,
 }AdaptiveEventCode;
+
+typedef struct _AdaptiveRecord {
+    AdaptiveRecordCode code;
+    std::chrono::nanoseconds time_data;
+    int num_data;
+}AdaptiveEvent;
 
 typedef struct _AdaptiveEvent {
     AdaptiveEventCode code;
@@ -45,12 +44,11 @@ typedef struct _AdaptiveEvent {
 }AdaptiveEvent;
 
 
-
 void newAdaptiveControl (AdsEvent* shutdown,
-                         AdsQueue* sink_queue,
-                         AdsQueue* capture_event_in,
-                         AdsQueue* capture_event_out,
-                         AdsQueue* sink_event_in,
-                         AdsQueue* sink_event_out);
+                         AdsQueue* capture_record,
+                         AdsQueue* capture_event,
+                         AdsQueue* sink_record,
+                         AdsQueue* client_record
+                         );
 
 #endif

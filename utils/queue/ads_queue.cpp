@@ -190,10 +190,10 @@ queue_array_finalize(AdsQueue* queue)
  * @brief 
  * 
  */
-QueueArrayClass*
+AdsQueueClass*
 queue_array_class_init()
 {
-    static QueueArrayClass klass = {0};
+    static AdsQueueClass klass = {0};
     RETURN_PTR_ONCE(klass);
 
     klass.init = queue_array_init;

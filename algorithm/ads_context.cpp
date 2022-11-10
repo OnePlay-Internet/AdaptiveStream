@@ -18,41 +18,30 @@ using namespace std::literals;
 
 #define DISABLE_EVALUATION true
 #define EVALUATION_INTERVAL 3s
+#define LISTEN_INTERVAL 10ms
 #define BUFFER_LIMIT 3ms
 
+typedef struct _Record {
+    std::chrono::nanoseconds sink_cycle;
+
+    std::chrono::nanoseconds capture_cycle;
+
+    std::chrono::high_resolution_clock::time_point timestamp;
+
+    uint64 sink_queue_size;
+}Record;
+
 typedef struct _AdaptiveContext {
-    /**
-     * @brief 
-     * INPUT
-     */
-    AdsQueue* sink_event_in;
+    AdsQueue* capture_record;
+    AdsQueue* capture_event;
+    AdsQueue* sink_record;
+    AdsQueue* client_record;
 
     /**
      * @brief 
-     * INPUT
+     * 
      */
-    AdsQueue* capture_event_in;
-
-    /**
-     * @brief 
-     * OUTPUT
-     */
-    AdsQueue* capture_event_out;
-
-    /**
-     * @brief 
-     * OUTPUT
-     */
-    AdsQueue* sink_event_out;
-
-    /**
-     * @brief 
-     * don't touch this
-     */
-     AdsQueue* sink_queue;
-
     AdsEvent* shutdown;
-
     /**
      * @brief 
      * store metric as record
@@ -86,7 +75,7 @@ push_record(AdaptiveContext* context,
 
 void
 median_10_record(AdaptiveContext* context, 
-                    Record* record)
+                 Record* record)
 {
     float median_sink_cycle, median_capture_cycle, total_time, diff, total_buffer_time = 0;
 
@@ -112,18 +101,16 @@ adaptiveThreadListen(AdaptiveContext* context)
 {
     while (!IS_INVOKED(context->shutdown))
     {
+        AdsBuffer* buf = NULL;
         Record rec; memset(&rec,0,sizeof(Record));
         bool has_sink,has_capture = false;
 
-        std::this_thread::sleep_for(10ms);
-        if (QUEUE_ARRAY_CLASS->peek(context->sink_event_in))
-        {
-                AdsBuffer* buf = NULL;
-            AdaptiveEvent* event = (AdaptiveEvent*) QUEUE_ARRAY_CLASS->pop(context->sink_event_in,&buf,NULL,true);
-
-            switch (event->code)
-            {
-            case AdaptiveEventCode::SINK_CYCLE_REPORT:
+        std::this_thread::sleep_for(LISTEN_INTERVAL);
+        if (QUEUE_ARRAY_CLASS->peek(context->sink_record)) {
+            AdaptiveEvent* event = (AdaptiveEvent*) 
+                QUEUE_ARRAY_CLASS->pop(context->sink_record,&buf,NULL,true);
+            switch (event->code) {
+            case AdaptiveRecordCode::SINK_THREAD_CYCLE:
                 rec.sink_cycle = event->time_data;
                 has_sink = true;
                 break;
@@ -132,22 +119,14 @@ adaptiveThreadListen(AdaptiveContext* context)
                 break;
             }
 
-
-
             BUFFER_UNREF(buf);
         }
         
-        if (QUEUE_ARRAY_CLASS->peek(context->capture_event_in))
-        {
-                AdsBuffer* buf = NULL;
-            AdaptiveEvent* event = (AdaptiveEvent*) QUEUE_ARRAY_CLASS->pop(context->capture_event_in,&buf,NULL,true);
-
-            switch (event->code)
-            {
-            case AdaptiveEventCode::CAPTURE_TIMEOUT:
-                /* code */
-                break;
-            case AdaptiveEventCode::CAPTURE_CYCLE_REPORT :
+        if (QUEUE_ARRAY_CLASS->peek(context->capture_record)) {
+            AdaptiveEvent* event = (AdaptiveEvent*) 
+                QUEUE_ARRAY_CLASS->pop(context->capture_record,&buf,NULL,true);
+            switch (event->code) {
+            case AdaptiveRecordCode::CAPTURE_THREAD_CYCLE:
                 rec.capture_cycle = event->time_data;
                 has_capture = true;
                 break;
@@ -156,22 +135,22 @@ adaptiveThreadListen(AdaptiveContext* context)
                 break;
             }
 
-
             BUFFER_UNREF(buf);
         }
 
+        if (QUEUE_ARRAY_CLASS->peek(context->client_record)) {
+
+        }
 
         if (has_sink || has_capture)
         {
             rec.timestamp = std::chrono::high_resolution_clock::now();
-            rec.sink_queue_size = QUEUE_ARRAY_CLASS->size(context->sink_queue);
 
             if(!has_sink) 
                 rec.sink_cycle = context->records[0].sink_cycle;
             if(!has_capture) 
                 rec.capture_cycle = context->records[0].capture_cycle;
 
-            rec.sink_queue_size = QUEUE_ARRAY_CLASS->size(context->sink_queue);
             push_record(context,&rec);
             context->record_count++;
         }
@@ -210,22 +189,22 @@ adaptiveThreadProcess(AdaptiveContext* context)
     }
 }
 
-void newAdaptiveControl (AdsQueue* shutdown,
-                         AdsQueue* sink_queue,
-                         AdsQueue* capture_event_in,
-                         AdsQueue* capture_event_out,
-                         AdsQueue* sink_event_in,
-                         AdsQueue* sink_event_out)
+void 
+newAdaptiveControlThread (AdsEvent* shutdown,
+                        AdsQueue* capture_record,
+                        AdsQueue* capture_event,
+                        AdsQueue* sink_record,
+                        AdsQueue* client_record)
 {
     AdaptiveContext context;
     memset(&context,0,sizeof(AdaptiveContext));
     context.prev = std::chrono::high_resolution_clock::now();
-    context.capture_event_in = capture_event_out;
-    context.capture_event_out = capture_event_in;
-    context.sink_event_in = sink_event_out;
-    context.sink_event_out = sink_event_in;
-    context.record_count=0;
-    context.sink_queue = sink_queue;
+    context.capture_record = capture_record;
+    context.capture_event = capture_event;
+    context.sink_record = sink_record;
+    context.client_record = client_record;
+
+    context.record_count = 0;
     context.shutdown = shutdown;
 
     std::thread listen { adaptiveThreadListen, &context };
@@ -233,6 +212,23 @@ void newAdaptiveControl (AdsQueue* shutdown,
     std::thread process { adaptiveThreadProcess, &context };
     process.detach();
     WAIT_EVENT(context.shutdown);
+    std::this_thread::sleep_for(1s);
 }
 
 
+void 
+newAdaptiveControl (AdsEvent* shutdown,
+                    AdsQueue* capture_record,
+                    AdsQueue* capture_event,
+                    AdsQueue* sink_record,
+                    AdsQueue* client_record
+                    )
+{
+    std::thread thread { newAdaptiveControlThread, 
+                    shutdown,
+                    capture_record,
+                    capture_event,
+                    sink_record,
+                    client_record };
+    thread.detach();
+}

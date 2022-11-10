@@ -38,7 +38,7 @@ bool
 wait_event(AdsEvent* broadcaster)
 {
     while (!QUEUE_ARRAY_CLASS->peek(broadcaster)) { 
-        std::this_thread::sleep_for(10s); 
+        std::this_thread::sleep_for(1s); 
     }
     return true;
 }

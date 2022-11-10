@@ -19,7 +19,7 @@
 
 typedef struct _QueueArray AdsQueue;
 
-typedef struct _QueueArrayClass{
+typedef struct _AdsQueueClass{
     bool (*push) (AdsQueue* queue,  AdsBuffer* data, bool record);
 
     bool (*peek) (AdsQueue* queue);
@@ -33,9 +33,9 @@ typedef struct _QueueArrayClass{
     uint64 (*size) (AdsQueue* queue);
 
     void (*stop) (AdsQueue* queue);
-} QueueArrayClass;
+} AdsQueueClass;
 
-QueueArrayClass*        queue_array_class_init      ();
+AdsQueueClass*        queue_array_class_init      ();
 
 
 
