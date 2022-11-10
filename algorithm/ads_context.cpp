@@ -111,7 +111,7 @@ adaptiveThreadListen(AdaptiveContext* context)
                 ADS_QUEUE_CLASS->pop(context->sink_record,&buf,NULL,true);
             switch (event->code) {
             case AdaptiveRecordCode::SINK_THREAD_CYCLE:
-                rec.sink_cycle = event->time_data;
+                rec.sink_cycle = event->time_data[0];
                 has_sink = true;
                 break;
             default:
@@ -127,7 +127,7 @@ adaptiveThreadListen(AdaptiveContext* context)
                 ADS_QUEUE_CLASS->pop(context->capture_record,&buf,NULL,true);
             switch (event->code) {
             case AdaptiveRecordCode::CAPTURE_THREAD_CYCLE:
-                rec.capture_cycle = event->time_data;
+                rec.capture_cycle = event->time_data[0];
                 has_capture = true;
                 break;
             default:
@@ -167,8 +167,6 @@ adaptiveThreadProcess(AdaptiveContext* context)
             continue;
         }
         
-        AdaptiveEventCode code = AdaptiveEventCode::EVENT_NONE;
-
         Record record;
         median_10_record(context,&record);
 

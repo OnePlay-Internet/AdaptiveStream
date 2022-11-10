@@ -15,8 +15,6 @@
 
 
 typedef enum _AdaptiveRecordCode {
-    EVENT_NONE,
-
     CLIENT_BANDWIDTH,
     CLIENT_RTT,
 
@@ -25,22 +23,20 @@ typedef enum _AdaptiveRecordCode {
 }AdaptiveRecordCode;
 
 typedef enum _AdaptiveEventCode {
-    EVENT_NONE,
-
     BITRATE_CHANGE ,
     FRAMERATE_CHANGE ,
 }AdaptiveEventCode;
 
 typedef struct _AdaptiveRecord {
     AdaptiveRecordCode code;
-    std::chrono::nanoseconds time_data;
-    int num_data;
-}AdaptiveEvent;
+    std::chrono::nanoseconds time_data[10];
+    int num_data[10];
+}AdaptiveRecord;
 
 typedef struct _AdaptiveEvent {
     AdaptiveEventCode code;
-    std::chrono::nanoseconds time_data;
-    int num_data;
+    std::chrono::nanoseconds time_data[10];
+    int num_data[10];
 }AdaptiveEvent;
 
 
