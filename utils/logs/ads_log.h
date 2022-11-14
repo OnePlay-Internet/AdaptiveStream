@@ -12,31 +12,7 @@
 #define  __ADS_LOG_H__
 
 
-#include <chrono>
-
-
-enum Error {
-    ENCODER_ERROR_MIN = -100,
-
-    CREATE_TEXTURE_FAILED,
-    CREATE_HW_DEVICE_FAILED,
-    CREATE_SESSION_FAILED,
-
-    ENCODER_UNKNOWN,
-    ENCODER_NEED_MORE_FRAME,
-    ENCODER_END_OF_STREAM,
-
-    ALLOC_IMG_ERR,
-
-    ENCODER_ERROR_MAX,
-    ERROR_NONE,
-};
-
-
-void  ads_log(char* file,
-            int line,
-            char* level,
-            char* message);
+#include <ads_util.h>
 
 typedef enum _BufferEventType {
     NONE,
@@ -46,27 +22,38 @@ typedef enum _BufferEventType {
     FREE,
 }BufferEventType;
 
-typedef struct _BufferEvent {
-    std::chrono::system_clock::time_point time;
+/**
+ * @brief 
+ * 
+ * @param file 
+ * @param line 
+ * @param level 
+ * @param message 
+ */
+void              ads_log                   (char* file,
+                                             int line,
+                                             char* level,
+                                             char* message);
 
-    int line;
+/**
+ * @brief 
+ * 
+ * @param log 
+ * @param created 
+ * @param line 
+ * @param file 
+ * @param type 
+ */
+void             log_buffer                 (AdsDataType datatype,
+                                             time_point created,
+                                             int line,
+                                             char* file,
+                                             BufferEventType type);
 
-    char* file;
 
-    BufferEventType type;
-}BufferEvent;
 
-typedef struct _BufferLog {
-    BufferEvent events[100];
 
-    char dataType[50];
-}BufferLog;
 
-void log_buffer(BufferLog* log,
-                std::chrono::high_resolution_clock::time_point created,
-                int line,
-                char* file,
-                BufferEventType type);
 
 
 #endif

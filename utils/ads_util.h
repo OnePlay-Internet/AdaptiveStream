@@ -17,6 +17,8 @@
 #include <ads_macros.h>
 #include <ads_log.h>
 #include <ads_event.h>
+#include <ads_buffer_array.h>
+#include <ads_buffer_map.h>
 
 
 #endif

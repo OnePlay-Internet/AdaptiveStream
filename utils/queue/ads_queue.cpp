@@ -16,7 +16,6 @@
 #include <thread>
 #include <stdio.h>
 #include <string.h>
-using namespace std::literals;
 
 
 #include <pthread.h>
@@ -26,7 +25,7 @@ using namespace std::literals;
 
 typedef struct _BufferLL BufferLL;
 struct _BufferLL {
-    AdsBuffer* obj;
+    AdsBuffer* buff;
 
     BufferLL* next;
 };
@@ -57,8 +56,7 @@ struct _QueueArray {
  */
 bool            
 queue_array_push(AdsQueue* queue, 
-                 AdsBuffer* obj,
-                 bool record)
+                 AdsBuffer* obj)
 {
     BufferLL* last = (BufferLL*)malloc(sizeof(BufferLL));
     memset(last,0,sizeof(BufferLL));
@@ -66,19 +64,18 @@ queue_array_push(AdsQueue* queue,
     while (queue->size >= queue->max_size)
         std::this_thread::sleep_for(ATOMIC_SLEEP);
 
-    if (record)
-    {
+#ifdef BUFFER_TRACE
 #ifndef MINGW
         BUFFER_CLASS->ref(obj,NULL,"\\ads_queue.cpp",__LINE__);
 #else
         BUFFER_CLASS->ref(obj,NULL,"/ads_queue.cpp",__LINE__);
 #endif
-    } else {
-        BUFFER_CLASS->ref(obj,NULL,"/util/",__LINE__);
-    }
+#else
+    BUFFER_CLASS->ref(obj,NULL);
+#endif
 
     // lock this
-    last->obj  = obj;
+    last->buff  = obj;
     last->next = NULL;
 
     {
@@ -115,8 +112,7 @@ queue_array_size(AdsQueue* queue)
 pointer
 queue_array_pop(AdsQueue* queue, 
                   AdsBuffer** buf,
-                int* size,
-                bool record)
+                int* size)
 {
     BufferLL* container;
      AdsBuffer *ret;
@@ -129,7 +125,7 @@ queue_array_pop(AdsQueue* queue,
     {
         pthread_mutex_lock(&queue->mutex);
         container = queue->first;
-        ret = queue->first->obj;
+        ret = queue->first->buff;
         queue->first = queue->first->next;
         pthread_mutex_unlock(&queue->mutex);
     }
@@ -138,19 +134,19 @@ queue_array_pop(AdsQueue* queue,
     free(container);
     *buf = ret;
     pointer data;
-    if (record)
-    {
+#ifdef BUFFER_TRACE
 #ifndef MINGW
-    data =  BUFFER_CLASS->ref(ret,size,"\\ads_queue.cpp",__LINE__);
-     BUFFER_CLASS->unref(ret,"\\ads_queue.cpp",__LINE__);
+    char* file = "\\ads_queue.cpp";
 #else
-    data =  BUFFER_CLASS->ref(ret,size,"/ads_queue.cpp",__LINE__);
-     BUFFER_CLASS->unref(ret,"/ads_queue.cpp",__LINE__);
+    char* file = "/ads_queue.cpp";
 #endif
-    } else {
-        data =  BUFFER_CLASS->ref(ret,size,"/util/",__LINE__);
-         BUFFER_CLASS->unref(ret,"/util/",__LINE__);
-    }
+    data =  BUFFER_CLASS->ref(ret,size,file,__LINE__);
+    BUFFER_CLASS->unref(ret,file,__LINE__);
+#else 
+    data =  BUFFER_CLASS->ref(ret,size);
+    BUFFER_CLASS->unref(ret);
+#endif
+
     queue->size--;
     return data;
 }
@@ -174,11 +170,16 @@ queue_array_finalize(AdsQueue* queue)
     while(queue_array_peek(queue))
     {
         AdsBuffer* buf;
-        queue_array_pop(queue,&buf,NULL,false);
+        queue_array_pop(queue,&buf,NULL);
+#ifdef BUFFER_TRACE
 #ifndef MINGW
-     BUFFER_CLASS->unref(buf,"\\ads_queue.cpp",__LINE__);
+    char* file = "\\ads_queue.cpp";
 #else
-     BUFFER_CLASS->unref(buf,"/ads_queue.cpp",__LINE__);
+    char* file = "/ads_queue.cpp";
+#endif
+    BUFFER_CLASS->unref(buf,file,__LINE__);
+#else
+    BUFFER_CLASS->unref(buf);
 #endif
     }
 
@@ -191,7 +192,7 @@ queue_array_finalize(AdsQueue* queue)
  * 
  */
 AdsQueueClass*
-ADS_QUEUE_CLASS_init()
+ads_queue_class_init()
 {
     static AdsQueueClass klass = {0};
     RETURN_PTR_ONCE(klass);

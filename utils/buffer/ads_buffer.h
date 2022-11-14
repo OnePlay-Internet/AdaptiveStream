@@ -16,8 +16,9 @@
 #include <ads_datatype.h>
 #include <string>
 #include <typeinfo>
+#include <cstring>
 
-#define BUFFER_TRACE
+// #define BUFFER_TRACE
 #define BUFFER_CLASS          object_class_init() 
 #ifdef BUFFER_TRACE
 
@@ -31,7 +32,7 @@
 
 #define BUFFER_UNREF(obj)                            object_class_init()->unref(obj)
 
-#define BUFFER_INIT(obj,size,free)                   object_class_init()->init(obj,size,free)
+#define BUFFER_INIT(obj,size,type,free)              object_class_init()->init(obj,size,type,free)
 #endif
 
 
@@ -44,9 +45,9 @@
  * y: object data size
  * z: object data pointer
  */
-#define BUFFER_MALLOC(x,y,z) pointer z = (pointer)malloc( y );  \
+#define BUFFER_MALLOC(x,y,type,z) pointer z = (pointer)malloc( y );  \
                              memset(z,0,y); \
-                              AdsBuffer* x = BUFFER_INIT(z,y,free) 
+                              AdsBuffer* x = BUFFER_INIT(z,y,type,free) 
 
 
 /**
@@ -86,6 +87,7 @@ typedef struct _BufferClass {
 
     AdsBuffer* (*init)     (pointer data,
                             uint size,
+                            AdsDataType datatype,
                             BufferFreeFunc func
 #ifdef BUFFER_TRACE
                             ,char* file
@@ -99,6 +101,12 @@ typedef struct _BufferClass {
     uint    (*size)     (AdsBuffer* obj);
 
     int64   (*created)(AdsBuffer* obj);
+
+    AdsDataType (*datatype)(AdsBuffer* obj);
+
+    AdsBuffer* (*from_pointer)  (AdsDataType type,
+                                 int size,
+                                 pointer ptr);
 } BufferClass;
 
 

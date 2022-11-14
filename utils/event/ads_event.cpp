@@ -12,7 +12,6 @@
 #include <ads_macros.h>
 #include <thread>
 
-using namespace std::literals;
 
 AdsEvent*    
 new_event()
@@ -29,16 +28,17 @@ destroy_event(AdsEvent* event)
 void            
 raise_event(AdsEvent* broadcaster)
 {
-    AdsBuffer* obj = BUFFER_INIT((pointer)true,sizeof(bool),DO_NOTHING);
-    ADS_QUEUE_CLASS->push(broadcaster,obj,false);
-    BUFFER_UNREF(obj);
+    bool val = true;
+    AdsBuffer* obj = BUFFER_CLASS->from_pointer(AdsDataType::ADS_DATATYPE_BOOLEAN,0,&val);
+    ADS_QUEUE_CLASS->push(broadcaster,obj);
+    BUFFER_CLASS->unref(obj);
 }
 
 bool            
 wait_event(AdsEvent* broadcaster)
 {
     while (!ADS_QUEUE_CLASS->peek(broadcaster)) { 
-        std::this_thread::sleep_for(1s); 
+        std::this_thread::sleep_for(SEC(1)); 
     }
     return true;
 }

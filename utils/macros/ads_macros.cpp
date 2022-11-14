@@ -35,3 +35,35 @@ string_compare(char* a,
     else
         return false;
 }
+
+char*
+ads_datatype_name(AdsDataType type){
+    switch (type)
+    {
+    case ADS_DATATYPE_INT32:
+        return "INT32";
+    case ADS_DATATYPE_STRING:
+        return "STRING";
+    case ADS_DATATYPE_BOOLEAN:
+        return "BOOLEAN";
+    case ADS_DATATYPE_BYTEARRAY:
+        return "BYTEARRAY";
+    case ADS_DATATYPE_TIMERANGE_NANOSECOND:
+        return "TIMERANGE_NANOSECOND";
+    case ADS_DATATYPE_TIMEPOINT:
+        return "TIMEPOINT";
+    case ADS_DATATYPE_STRUCT:
+        return "STRUCT";
+    case ADS_DATATYPE_ERROR:
+        return "ERROR";
+    case ADS_DATATYPE_BUFFER:
+        return "BUFFER";
+    case ADS_DATATYPE_BUFFER_ARRAY:
+        return "BUFFER_ARRAY";
+    case ADS_DATATYPE_BUFFER_MAP:
+        return "BUFFER_MAP";
+    default:
+        return "UNKNOWN";
+    }
+
+}

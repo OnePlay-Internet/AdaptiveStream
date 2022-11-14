@@ -45,10 +45,19 @@ typedef struct _AdsBuffer{
      * @brief 
      * 
      */
-    std::chrono::high_resolution_clock::time_point created;
-#ifdef BUFFER_TRACE
+    time_point created;
 
-     BufferLog log;
+
+
+    AdsDataType datatype;
+    bool allow_duplicate;
+
+#ifdef BUFFER_TRACE
+    /**
+     * @brief 
+     * 
+     */
+    BufferLog log;
 #endif
 };
 
@@ -57,6 +66,9 @@ typedef struct _AdsBuffer{
 AdsBuffer*
 object_duplicate (AdsBuffer* obj)
 {
+    if (!obj->allow_duplicate)
+        return NULL;
+    
     AdsBuffer* object = (AdsBuffer*)malloc(sizeof(AdsBuffer));
     memset(object,0,sizeof(AdsBuffer));
     memcpy(object,obj,sizeof(AdsBuffer));
@@ -65,84 +77,98 @@ object_duplicate (AdsBuffer* obj)
     memcpy(object->data,obj->data,obj->size);
 
     object->ref_count = 1;
-    object->created = std::chrono::high_resolution_clock::now();
+    object->created = NOW;
     return object;
 }
 
-#ifndef BUFFER_TRACE
- AdsBuffer* 
-object_init (pointer data, 
-                uint size,
-                BufferFreeFunc free_func)
-{
-     AdsBuffer* object = ( AdsBuffer*)malloc(sizeof( AdsBuffer));
-    memset(object,0,sizeof( AdsBuffer));
 
-    object->data = data;
-    object->free_func = free_func;
-    object->size = size,
-    object->ref_count = 1;
-    return object;
-}
-pointer 
-object_ref ( AdsBuffer* obj,
-            int* size)
-{
-
-    if(FILTER_ERROR(obj))
-        return;
-
-    obj->ref_count++;
-    if (size)
-        *size = obj->size;
-    
-    return obj->data;
-}
-
-void    
-object_unref ( AdsBuffer* obj)
-{
-    if(FILTER_ERROR(obj))
-        return;
-
-    obj->ref_count--;
-    if (!obj->ref_count)
-    {
-        obj->free_func(obj->data);
-        free(obj);
-    }
-}
-#else
 AdsBuffer* 
 object_init (pointer data, 
-                uint size,
-                BufferFreeFunc free_func,
-                char* file,
-                int line,
-                char* type)
+             uint size,
+             AdsDataType datatype,
+             BufferFreeFunc free_func
+#ifdef BUFFER_TRACE
+             ,char* file,
+             int line,
+             char* type
+#endif
+             )
 {
     AdsBuffer* object = (AdsBuffer*)malloc(sizeof(AdsBuffer));
     memset(object,0,sizeof(AdsBuffer));
-    memcpy(object->log.dataType,type,strlen(type));
-    object->created = std::chrono::high_resolution_clock::now();
+    object->created = NOW;
 
     object->data = data;
     object->free_func = free_func;
-    object->size = size,
     object->ref_count = 1;
+    object->datatype = datatype;
+    object->allow_duplicate = true;
 
 
-     log_buffer(&object->log,object->created,line,file, BufferEventType::INIT);
+    switch (datatype)
+    {
+    case AdsDataType::ADS_DATATYPE_BOOLEAN :
+        free_func = free;
+        size = sizeof(bool);
+        break;
+    case AdsDataType::ADS_DATATYPE_INT32 :
+        free_func = free;
+        size = sizeof(int32);
+        break;
+    case AdsDataType::ADS_DATATYPE_TIMEPOINT :
+        free_func = free;
+        size = sizeof(time_point);
+        break;
+    case AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND :
+        free_func = free;
+        size = sizeof(nanosecond);
+        break;
+    case AdsDataType::ADS_DATATYPE_STRING :
+        free_func = free;
+        size = strlen((char*)data) + 1;
+        break;
 
+    case AdsDataType::ADS_DATATYPE_STRUCT :
+    case AdsDataType::ADS_DATATYPE_BYTEARRAY :
+        free_func = free;
+        break;
+
+    case AdsDataType::ADS_DATATYPE_BUFFER_ARRAY:
+        free_func = (BufferFreeFunc)ADS_BUFFER_ARRAY_CLASS->unref;
+    case AdsDataType::ADS_DATATYPE_BUFFER_MAP:
+        free_func = (BufferFreeFunc)ADS_BUFFER_MAP_CLASS->unref;
+    case AdsDataType::ADS_DATATYPE_BUFFER:
+        free_func = (BufferFreeFunc)BUFFER_CLASS->unref;
+        object->allow_duplicate = false;
+        size = 0;
+        break;
+
+    default:
+        LOG_ERROR("unknown datatype");
+        return NULL;
+    }
+
+
+#ifdef BUFFER_TRACE
+    memcpy(object->log.dataType,type,strlen(type));
+    log_buffer(obj->datatype,object->created,line,file, BufferEventType::INIT);
+#endif
+
+    object->size = size;
     return object;
 }
 pointer 
 object_ref (AdsBuffer* obj,
-            int* size,
-            char* file,
-            int line)
+            int* size
+#ifdef BUFFER_TRACE
+            ,char* file,
+            int line
+#endif
+            )
 {
-     log_buffer(&obj->log,obj->created,line,file, BufferEventType::REF);
+#ifdef BUFFER_TRACE
+    log_buffer(obj->datatype,obj->created,line,file, BufferEventType::REF);
+#endif
 
     obj->ref_count++;
     if (size)
@@ -152,32 +178,29 @@ object_ref (AdsBuffer* obj,
 }
 
 void    
-object_unref (AdsBuffer* obj,
-                char* file,
-                int line)
+object_unref (AdsBuffer* obj
+#ifdef BUFFER_TRACE
+              ,char* file,
+              int line
+#endif
+              )
 {
-     log_buffer(&obj->log,obj->created,line,file, BufferEventType::UNREF);
+
+#ifdef BUFFER_TRACE
+    log_buffer(obj->datatype,obj->created,line,file, BufferEventType::UNREF);
+#endif
     
     obj->ref_count--;
     if (!obj->ref_count) {
-         log_buffer(&obj->log,obj->created,line,file, BufferEventType::FREE);
+#ifdef BUFFER_TRACE
+        log_buffer(obj->datatype,obj->created,line,file, BufferEventType::FREE);
+#endif
         obj->free_func(obj->data);
         free(obj);
     }
 }
 
-#endif
 
-AdsBuffer*
-buffer_merge(AdsBuffer* buffer,
-                AdsBuffer* inserter)
-{
-    uint new_size = buffer->size+inserter->size;
-    pointer new_ptr = malloc(new_size);
-    memcpy(new_ptr,buffer,buffer->size);
-    memcpy((char*)new_ptr+buffer->size,inserter,inserter->size);
-    return BUFFER_INIT(new_ptr,new_size,free);
-}
 
 uint
 object_size (AdsBuffer* obj)
@@ -188,14 +211,69 @@ object_size (AdsBuffer* obj)
 int64
 object_create(AdsBuffer* obj)
 {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(obj->created.time_since_epoch()).count();
+    return std::chrono::duration_cast<nanosecond>(obj->created.time_since_epoch()).count();
+}
+
+
+AdsDataType
+object_get_datatype(AdsBuffer* obj) {
+    return obj->datatype;
 }
 
 
 
 
+AdsBuffer* 
+object_from_pointer(AdsDataType type,
+                    int optional_size,
+                    pointer ptr)
+{
+    int size;
+    switch (type)
+    {
+    case AdsDataType::ADS_DATATYPE_BOOLEAN :
+        size = sizeof(bool);
+        break;
+    case AdsDataType::ADS_DATATYPE_INT32 :
+        size = sizeof(int32);
+        break;
+    case AdsDataType::ADS_DATATYPE_TIMEPOINT :
+        size = sizeof(time_point);
+        break;
+    case AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND :
+        size = sizeof(nanosecond);
+        break;
+    case AdsDataType::ADS_DATATYPE_STRING :
+        size = strlen((char*)ptr) + 1;
+        break;
 
+    case AdsDataType::ADS_DATATYPE_STRUCT :
+    case AdsDataType::ADS_DATATYPE_BYTEARRAY :
+        size = optional_size;
+        break;
 
+    case AdsDataType::ADS_DATATYPE_BUFFER_ARRAY:
+    case AdsDataType::ADS_DATATYPE_BUFFER_MAP:
+    case AdsDataType::ADS_DATATYPE_BUFFER:
+        LOG_ERROR("buffer from pointer is banned");
+        return NULL;
+
+    default:
+        LOG_ERROR("unknown datatype");
+        return NULL;
+    }
+
+    if (size <= 0) {
+        LOG_ERROR("size must be larger than 0");
+        return NULL;
+    }
+    
+
+    pointer buff_ptr = malloc(size);
+    memset(buff_ptr,0,size);
+    memcpy(buff_ptr,ptr,size);
+    return object_init(buff_ptr,size,type,free);
+}
 
 
 BufferClass*
@@ -209,6 +287,7 @@ object_class_init()
     klass.ref           = object_ref;
     klass.duplicate     = object_duplicate;
     klass.size          = object_size;
-    klass.created       = object_create;
+    klass.datatype      = object_get_datatype;
+    klass.from_pointer  = object_from_pointer;
     return &klass;
 }

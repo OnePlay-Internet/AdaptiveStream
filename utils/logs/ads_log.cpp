@@ -21,11 +21,6 @@
 
 #define LOG_QUEUE get_log_queue()
 
-
-using namespace std::literals;
-
-
-
 typedef struct _Err {
     int line;
     char* file;
@@ -33,6 +28,9 @@ typedef struct _Err {
     char message[100];
     char time[100];
 }Err;
+
+
+
 
 static char*
 find_from_back(char* str, char* word)
@@ -73,12 +71,12 @@ render_log(AdsQueue* array)
     while(true)
     {
         while(!ADS_QUEUE_CLASS->peek(array)) {
-            std::this_thread::sleep_for(50ms);
+            std::this_thread::sleep_for(MILLISEC(50));
         }
 
 
             AdsBuffer* buf;
-        Err* err = (Err*)ADS_QUEUE_CLASS->pop(array,&buf,NULL,false);
+        Err* err = (Err*)ADS_QUEUE_CLASS->pop(array,&buf,NULL);
 
         char file_log[36] = {" "};
         file_log[35] = 0;
@@ -124,7 +122,7 @@ render_log(AdsQueue* array)
 
         std::cout << level_log << "||"<< file_log << "||"<< time_log << " || MESSAGE: "<< err->message << std::endl; 
     done:
-        BUFFER_UNREF(buf);
+        BUFFER_CLASS->unref(buf);
     }
 }
 
@@ -141,24 +139,25 @@ get_log_queue()
 
 
 void
-get_string_fmt(std::chrono::nanoseconds time,
+get_string_fmt(nanosecond time,
                 char** string)
 {
-    int64 min =      std::chrono::duration_cast<std::chrono::minutes>(time).count() %1000 %1000 %1000 %1000 %60;
-    int64 sec =      std::chrono::duration_cast<std::chrono::seconds>(time).count() %1000 %1000 % 1000 % 1000;
-    int64 mili =     std::chrono::duration_cast<std::chrono::milliseconds>(time).count() %1000 % 1000 % 1000;
-    int64 micro =    std::chrono::duration_cast<std::chrono::microseconds>(time).count() %1000 % 1000;
-    int64 nano =     std::chrono::duration_cast<std::chrono::nanoseconds>(time).count() %1000;
+    int64 min =      std::chrono::duration_cast<minute>(time).count() %1000 %1000 %1000 %1000 %60;
+    int64 sec =      std::chrono::duration_cast<second>(time).count() %1000 %1000 % 1000 % 1000;
+    int64 mili =     std::chrono::duration_cast<millisecond>(time).count() %1000 % 1000 % 1000;
+    int64 micro =    std::chrono::duration_cast<microsecond>(time).count() %1000 % 1000;
+    int64 nano =     std::chrono::duration_cast<nanosecond>(time).count() %1000;
     snprintf(*string,100,"(min:%d|sec:%d|mili:%d|micro:%d|nano:%d)",min,sec,mili,micro,nano);
 }
 
-std::chrono::nanoseconds 
+nanosecond 
 get_start_time()
 {
-    static std::chrono::high_resolution_clock::time_point fix;
-    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    static time_point fix;
+    time_point now = NOW;
     RETURN_ONCE(now - fix);
-    fix = std::chrono::high_resolution_clock::now();
+    fix = NOW;
+
     return now - fix;
 }
 
@@ -167,7 +166,7 @@ void ads_log(char* file,
             char* level,
             char* message)
 {
-    if(find_substr(file,"/util/") || find_substr(file, "\\util\\"))
+    if(find_substr(file,"IGNORE"))
         return;
 
     char timestr[100] = {0};
@@ -175,14 +174,18 @@ void ads_log(char* file,
     auto time = get_start_time();
     get_string_fmt(time,&temp);
 
-    BUFFER_MALLOC(buf,sizeof(Err),ptr);
+    pointer ptr = (pointer)malloc( sizeof(Err) );  
+    memset(ptr,0,sizeof(Err)); 
+    AdsBuffer* buf = BUFFER_CLASS->init(ptr,sizeof(Err),AdsDataType::ADS_DATATYPE_ERROR,free);
+
     memcpy(((Err*)ptr)->message,message,strlen(message));
     memcpy(((Err*)ptr)->level,level,strlen(level));
     memcpy(((Err*)ptr)->time,timestr,strlen(timestr));
     ((Err*)ptr)->line = line;
     ((Err*)ptr)->file = file;
-    ADS_QUEUE_CLASS->push(LOG_QUEUE,buf,false);
-    BUFFER_UNREF(buf);
+
+    ADS_QUEUE_CLASS->push(LOG_QUEUE,buf);
+    BUFFER_CLASS->unref(buf);
     return;
 }
 
@@ -206,16 +209,21 @@ map_event(BufferEventType type)
 
 
 
-void log_buffer(BufferLog* lg,
-                std::chrono::high_resolution_clock::time_point created,
+void log_buffer(AdsDataType datatype,
+                time_point created,
                 int line,
                 char* file,
                 BufferEventType type)
 {
     if (TRACE_RECORD) {
-        int64 createTime = std::chrono::duration_cast<std::chrono::milliseconds>(created.time_since_epoch()).count() % 10000;
+        int64 createTime = std::chrono::duration_cast<millisecond>(created.time_since_epoch()).count() % 10000;
         char str[100] = {0};
-        snprintf(str, 100, "buffer id %d contain %s : %s",createTime,lg->dataType,map_event(type));
+
+        snprintf(str, 100, "buffer id %d contain %s : %s",
+            createTime,
+            ADS_DATATYPE_NAME(datatype),
+            map_event(type));
+
         ads_log(file,line,"trace",str);
     }
     

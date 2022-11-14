@@ -10,10 +10,12 @@ file(GLOB UTIL_SOURCE_LIST
 	utils/logs/*.cpp
 	utils/event/*.cpp
 	utils/buffer/*.cpp
+	utils/array/*.cpp
+	utils/map/*.cpp
 )
 
 file(GLOB ADAPTIVE_SOURCE_LIST 
-	algorithm/*.cpp
+	src/*.cpp
 )
 
 set(ADS_TARGET_FILES
@@ -24,13 +26,16 @@ set(ADS_TARGET_FILES
 
 
 include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}/algorithm
+  ${CMAKE_CURRENT_SOURCE_DIR}/header
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
 
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/queue
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/macros
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/logs
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/event
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/buffer
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/array
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/map
   ${CMAKE_CURRENT_SOURCE_DIR}/utils
 )
  
@@ -81,3 +86,8 @@ set_target_properties(ads PROPERTIES CXX_STANDARD 17
                                VERSION ${PROJECT_VERSION}
                                SOVERSION ${PROJECT_VERSION_MAJOR})
 
+
+
+
+add_executable(testa test/main.cpp)
+target_link_libraries(testa ads)
