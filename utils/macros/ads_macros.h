@@ -47,4 +47,7 @@ void do_nothing(void*);
 #define STRING_COMPARE(a,b) string_compare(a,b)
 bool string_compare(char* a, char* b);
 
+#define TIME_STOP timestop()
+time_point timestop();
+
 #endif

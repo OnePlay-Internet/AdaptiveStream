@@ -23,4 +23,6 @@ typedef AdsBufferMap* (*AdsProcessFunc) (AdsBufferMap* query_result);
 #define RTSP_CLIENT_RTT_BANDWIDTH_TO_BITRATE rtsp_client_rtt_bandwidth_bitrate
 AdsBufferMap* rtsp_client_rtt_bandwidth_bitrate (AdsBufferMap* query_result);
 
+#define PRINT_MEIDUM print_medium
+AdsBufferMap* print_medium (AdsBufferMap* query_result);
 #endif

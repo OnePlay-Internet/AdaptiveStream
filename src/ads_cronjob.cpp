@@ -14,7 +14,7 @@
 #include <ads_database.h>
 
 #include <thread>
-#define EVALUATION_INTERVAL 3s
+#define EVALUATION_INTERVAL 10s
 
 
 struct Listener {
@@ -77,12 +77,13 @@ cronJobThread(AdsCronJob* job)
 
     time_point prev,now;
     while (!IS_INVOKED(job->shutdown)) {
+        std::this_thread::sleep_for(EVALUATION_INTERVAL);
         now = NOW;
 
         AdsBufferMap* map = get_data_in_range(job->database,prev,now);
-        if (!map) {
+        if (!map) 
             continue;
-        }
+        
         
 
         /**
@@ -97,7 +98,7 @@ cronJobThread(AdsCronJob* job)
             char* event_name = (char*)BUFFER_REF(buf,NULL);
 
             AdsBuffer* event_data = ADS_BUFFER_MAP_CLASS->get(events,event_name);
-            call_listener(job,event_name,buf);
+            call_listener(job,event_name,event_data);
             
 
             BUFFER_UNREF(buf);
@@ -108,7 +109,6 @@ cronJobThread(AdsCronJob* job)
 
         prev = now;
         ADS_BUFFER_MAP_CLASS->unref(map);
-        std::this_thread::sleep_for(EVALUATION_INTERVAL);
     }
 }
 

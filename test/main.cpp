@@ -15,46 +15,69 @@
 
 
 static void 
-callback(AdsBuffer* buf)
+callback1(AdsBuffer* buf)
 {
-    BUFFER_REF(buf,NULL);
-    printf("fired\n");
+    int* data = (int*)BUFFER_REF(buf,NULL);
+    if(*data)
+        printf("fired bandwidth %d\n",*data);
+    else
+        printf("fired bandwidth %d\n",*data);
+
+    BUFFER_UNREF(buf);
+}
+static void 
+callback2(AdsBuffer* buf)
+{
+    int* data = (int*)BUFFER_REF(buf,NULL);
+    if(*data)
+        printf("fired rtt %d\n",*data);
+    else
+        printf("fired rtt %d\n",*data);
 
     BUFFER_UNREF(buf);
 }
 
 int main(void) {
+    TIME_STOP;
     AdsEvent* shutdown         = NEW_EVENT;
     AdsContext* ctx = new_adaptive_context(shutdown,
                          "oneplay");
     
     AdsRecordSource* src1 = add_record_source(ctx,"rtt");
     AdsRecordSource* src2 = add_record_source(ctx,"bandwidth");
-    add_listener(ctx,"bitrate",callback);
+
+    add_listener(ctx,"bandwidth",callback1);
+    add_listener(ctx,"rtt",callback2);
 
 
-    std::thread producer1 = std::thread {
-        [&](){
-            for (;;) {
-                nanosecond ex = NANOSEC(50000);
-                pointer data = (void*)(&ex);
-                ads_push_record(src1,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
+    auto producertt = [&](){
+        int i = 50;
+        for (;;) {
+            nanosecond ex = NANOSEC(i);
+            pointer data = (void*)(&ex);
+            ads_push_record(src1,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
 
-                SLEEP_MILLISEC(100);
-            }
+            SLEEP_MILLISEC(1000);
+            i+=5;
         }
     };
-    std::thread producer2 = std::thread {
-        [&](){
-            for (;;) {
-                nanosecond ex = NANOSEC(50000);
-                pointer data = (void*)(&ex);
-                ads_push_record(src2,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
+    auto producebandwidth = [&](){
+        int i = 1000;
+        for (;;) {
+            nanosecond ex = NANOSEC(i);
+            pointer data = (void*)(&ex);
+            ads_push_record(src2,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
 
-                SLEEP_MILLISEC(150);
-            }
+            SLEEP_MILLISEC(1500);
+            i+=50;
         }
     };
+
+    std::thread producer1 = std::thread { producertt };
+    std::thread producer2 = std::thread { producebandwidth };
+    std::thread producer3 = std::thread { producertt };
+
+    producer3.join();
     producer2.join();
     producer1.join();
 }

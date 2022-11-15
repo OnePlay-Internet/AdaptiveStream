@@ -23,7 +23,7 @@ void            database_push_record        (AdsDatabase* db,
                                              char* name,
                                              AdsBuffer* data);
 
-AdsBufferMap* get_data_in_range            (AdsDatabase* db,
-                                              time_point from,
-                                              time_point to);
+AdsBufferMap*   get_data_in_range           (AdsDatabase* db,
+                                             time_point from,
+                                             time_point to);
 #endif

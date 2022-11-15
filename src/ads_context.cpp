@@ -64,7 +64,7 @@ new_adaptive_context(AdsEvent* shutdown,
     memset(context,0,sizeof(AdsContext));
 
     context->shutdown = shutdown;
-    context->database = new_ads_database(shutdown,100,SEC(10));
+    context->database = new_ads_database(shutdown,1000,SEC(100));
     context->job = new_cron_job(context->database,algorithm,shutdown);
     
     return context;

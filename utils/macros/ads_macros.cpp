@@ -67,3 +67,11 @@ ads_datatype_name(AdsDataType type){
     }
 
 }
+
+time_point
+timestop()
+{
+    static time_point ret;
+    RETURN_ONCE(ret);
+    ret = NOW;
+}

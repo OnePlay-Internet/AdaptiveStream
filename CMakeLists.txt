@@ -11,6 +11,7 @@ file(GLOB UTIL_SOURCE_LIST
 	utils/event/*.cpp
 	utils/buffer/*.cpp
 	utils/array/*.cpp
+	utils/timeseries/*.cpp
 	utils/map/*.cpp
 )
 
@@ -36,6 +37,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/buffer
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/array
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/map
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/timeseries
   ${CMAKE_CURRENT_SOURCE_DIR}/utils
 )
  

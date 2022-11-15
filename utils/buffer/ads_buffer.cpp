@@ -137,6 +137,8 @@ object_init (pointer data,
         free_func = (BufferFreeFunc)ADS_BUFFER_ARRAY_CLASS->unref;
     case AdsDataType::ADS_DATATYPE_BUFFER_MAP:
         free_func = (BufferFreeFunc)ADS_BUFFER_MAP_CLASS->unref;
+    case AdsDataType::ADS_DATATYPE_BUFFER_TIMESERIES:
+        free_func = (BufferFreeFunc)ADS_TIMESERIES_CLASS->unref;
     case AdsDataType::ADS_DATATYPE_BUFFER:
         free_func = (BufferFreeFunc)BUFFER_CLASS->unref;
         object->allow_duplicate = false;
@@ -144,7 +146,6 @@ object_init (pointer data,
         break;
 
     default:
-        LOG_ERROR("unknown datatype");
         return NULL;
     }
 
@@ -195,7 +196,8 @@ object_unref (AdsBuffer* obj
 #ifdef BUFFER_TRACE
         log_buffer(obj->datatype,obj->created,line,file, BufferEventType::FREE);
 #endif
-        obj->free_func(obj->data);
+        if (obj->free_func)
+            obj->free_func(obj->data);
         free(obj);
     }
 }

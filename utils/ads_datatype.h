@@ -40,6 +40,7 @@ typedef std::chrono::minutes minute;
 
 
 typedef enum _AdsDataType {
+    ADS_DATATYPE_FLOAT,
     ADS_DATATYPE_INT32,
     ADS_DATATYPE_STRING,
     ADS_DATATYPE_BOOLEAN,
@@ -50,6 +51,7 @@ typedef enum _AdsDataType {
     ADS_DATATYPE_ERROR,
     ADS_DATATYPE_BUFFER,
     ADS_DATATYPE_BUFFER_ARRAY,
+    ADS_DATATYPE_BUFFER_TIMESERIES,
     ADS_DATATYPE_BUFFER_MAP,
 }AdsDataType;
 

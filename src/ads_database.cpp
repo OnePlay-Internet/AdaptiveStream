@@ -211,25 +211,24 @@ get_data_in_range(AdsDatabase* db,
     {
         int count = 0;
         while (rc->next != NULL) {
+            AdsBuffer* arrbuf = NULL;
             if (!(from < rc->timestamp && rc->timestamp < to)) 
                 goto next;
 
-            for (int i = 0; i < 10; i++) {
-                AdsBuffer* arrbuf = ADS_BUFFER_MAP_CLASS->get(ret,rc->key);
-                if (arrbuf) {
-                    AdsBufferArray* arr = (AdsBufferArray*)BUFFER_REF(arrbuf,NULL);
-                    ADS_BUFFER_ARRAY_CLASS->append(arr,rc->data);
+            arrbuf = ADS_BUFFER_MAP_CLASS->get(ret,rc->key);
+            if (arrbuf) {
+                AdsTimeseries* arr = (AdsTimeseries*)BUFFER_REF(arrbuf,NULL);
+                ADS_TIMESERIES_CLASS->append(arr,rc->data,rc->timestamp);
 
-                    ADS_BUFFER_MAP_CLASS->set(ret,arrbuf,rc->key);
-                    BUFFER_UNREF(arrbuf);
-                } else {
-                    AdsBufferArray* arr = ADS_BUFFER_ARRAY_CLASS->init();
-                    ADS_BUFFER_ARRAY_CLASS->append(arr,rc->data);
+                ADS_BUFFER_MAP_CLASS->set(ret,arrbuf,rc->key);
+                BUFFER_UNREF(arrbuf);
+            } else {
+                AdsTimeseries* arr = ADS_TIMESERIES_CLASS->init();
+                ADS_TIMESERIES_CLASS->append(arr,rc->data,rc->timestamp);
 
-                    AdsBuffer* insert = BUFFER_INIT(arr,0,AdsDataType::ADS_DATATYPE_BUFFER_ARRAY,NULL);
-                    ADS_BUFFER_MAP_CLASS->set(ret,insert,rc->key);
-                    BUFFER_UNREF(insert);
-                }
+                AdsBuffer* insert = BUFFER_INIT(arr,0,AdsDataType::ADS_DATATYPE_BUFFER_TIMESERIES,NULL);
+                ADS_BUFFER_MAP_CLASS->set(ret,insert,rc->key);
+                BUFFER_UNREF(insert);
             }
             
         next: 
