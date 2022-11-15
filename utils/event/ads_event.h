@@ -11,7 +11,7 @@
 #ifndef  __ADS_EVENT_H__
 #define  __ADS_EVENT_H__
 
-#include <ads_queue.h>
+#include <ads_util.h>
 
 #define NEW_EVENT        new_event()
 #define RAISE_EVENT(x)   raise_event(x)
@@ -19,7 +19,7 @@
 #define WAIT_EVENT(x)    wait_event(x)
 #define IS_INVOKED(x)    is_invoked(x)
 
-typedef  AdsQueue       AdsEvent;
+typedef AdsQueue       AdsEvent;
 
 AdsEvent*       new_event       ();
 

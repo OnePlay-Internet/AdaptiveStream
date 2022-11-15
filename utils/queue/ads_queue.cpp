@@ -8,8 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
-#include <ads_queue.h>
-#include <ads_macros.h>
+#include <ads_util.h>
 #define BASE_SIZE 1024
 
 
@@ -115,7 +114,7 @@ queue_array_pop(AdsQueue* queue,
                 int* size)
 {
     BufferLL* container;
-     AdsBuffer *ret;
+    AdsBuffer *ret;
 
     // lock this
     while(!queue->first || !queue->size) 

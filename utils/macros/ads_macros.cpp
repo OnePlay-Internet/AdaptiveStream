@@ -12,7 +12,7 @@
 #include <string.h>
 
 
-void do_nothing(void*){}
+void ads_do_nothing(void*){}
 
 bool 
 string_compare(char* a, 

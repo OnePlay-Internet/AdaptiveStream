@@ -13,7 +13,7 @@
 #define __ADS_QUEUE_H__
 
 
-#include <ads_buffer.h>
+#include <ads_util.h>
 
 #define ADS_QUEUE_CLASS        ads_queue_class_init()
 

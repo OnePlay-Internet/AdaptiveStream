@@ -10,11 +10,13 @@
  */
 #ifndef __SUNSHINE_MACRO_H__
 #define __SUNSHINE_MACRO_H__
-#include <ads_log.h>
+#include <ads_util.h>
 
 #define DEFAULT_BITRATE ( 1000 * 1000 * 30 )
 
+#ifndef INFINITE
 #define INFINITE 10000
+#endif
 
 #define RECORD_SIZE 200
 
@@ -41,8 +43,8 @@
 #define ADS_DATATYPE_NAME(x) ads_datatype_name(x)
 char* ads_datatype_name(AdsDataType type);
 
-#define DO_NOTHING do_nothing
-void do_nothing(void*);
+#define DO_NOTHING ads_do_nothing
+void ads_do_nothing(void*);
 
 #define STRING_COMPARE(a,b) string_compare(a,b)
 bool string_compare(char* a, char* b);
