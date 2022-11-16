@@ -56,6 +56,8 @@ new_adaptive_context(AdsEvent* shutdown,
     AdsProcessFunc algorithm = NULL;
     if (STRING_COMPARE(application,"oneplay")) {
         algorithm = RTSP_CLIENT_RTT_BANDWIDTH_TO_BITRATE;
+    } else if (STRING_COMPARE(application,"print")) {
+        algorithm = PRINT_MEIDUM;
     } else {
         return NULL;
     }
@@ -64,7 +66,7 @@ new_adaptive_context(AdsEvent* shutdown,
     memset(context,0,sizeof(AdsContext));
 
     context->shutdown = shutdown;
-    context->database = new_ads_database(shutdown,1000,SEC(100));
+    context->database = new_ads_database(shutdown,10000,SEC(600));
     context->job = new_cron_job(context->database,algorithm,shutdown);
     
     return context;
