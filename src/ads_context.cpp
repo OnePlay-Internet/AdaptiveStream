@@ -51,16 +51,19 @@ struct _AdsContext {
 
 AdsContext* 
 new_adaptive_context(AdsEvent* shutdown,
-                     char* application)
+                     char* application,
+                     AdsProcessFunc algorithm)
 {
-    AdsProcessFunc algorithm = NULL;
-    if (STRING_COMPARE(application,"oneplay")) {
-        algorithm = RTSP_CLIENT_RTT_BANDWIDTH_TO_BITRATE;
-    } else if (STRING_COMPARE(application,"print")) {
-        algorithm = PRINT_MEIDUM;
-    } else {
-        return NULL;
+    if (algorithm == NULL) {
+        if (STRING_COMPARE(application,"rtsp")) {
+            algorithm = RTSP_CLIENT_RTT_BANDWIDTH_TO_BITRATE;
+        } else if (STRING_COMPARE(application,"print")) {
+            algorithm = PRINT_MEIDUM;
+        } else {
+            return NULL;
+        }
     }
+    
 
     AdsContext* context = (AdsContext*)malloc(sizeof(AdsContext));
     memset(context,0,sizeof(AdsContext));

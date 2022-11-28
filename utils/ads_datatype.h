@@ -21,9 +21,10 @@ typedef unsigned long long uint64;
 typedef long long     int64;
 typedef void*         pointer;
 
+
 #include <chrono>
 #include <thread>
-using namespace std::literals;
+using namespace std::literals::chrono_literals;
 
 typedef std::chrono::high_resolution_clock::time_point time_point;
 typedef std::chrono::nanoseconds nanosecond;

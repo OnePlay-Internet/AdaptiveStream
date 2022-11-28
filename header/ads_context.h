@@ -28,7 +28,8 @@ typedef void (*AdsCallback) (AdsBuffer* buf);
  * @return AdaptiveContext* 
  */
 AdsContext*         new_adaptive_context            (AdsEvent* shutdown,
-                                                    char* application);
+                                                    char* application,
+                                                    AdsProcessFunc function);
 
 AdsRecordSource*    add_listener                    (AdsContext* context,
                                                      char* name,

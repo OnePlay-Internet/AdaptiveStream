@@ -41,7 +41,7 @@ int main(void) {
     TIME_STOP;
     AdsEvent* shutdown         = NEW_EVENT;
     AdsContext* ctx = new_adaptive_context(shutdown,
-                         "oneplay");
+                         "oneplay",NULL);
     
     AdsRecordSource* src1 = add_record_source(ctx,"rtt");
     AdsRecordSource* src2 = add_record_source(ctx,"bandwidth");

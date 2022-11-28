@@ -15,7 +15,6 @@
 #include <ads_util.h>
 
 
-typedef AdsBufferMap* (*AdsProcessFunc) (AdsBufferMap* query_result);
 
 
 

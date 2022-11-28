@@ -21,5 +21,6 @@
 #include "timeseries/ads_timeseries.h"
 #include "map/ads_buffer_map.h"
 
+typedef AdsBufferMap* (*AdsProcessFunc) (AdsBufferMap* query_result);
 
 #endif

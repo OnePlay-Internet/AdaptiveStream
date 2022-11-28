@@ -49,9 +49,8 @@ include_directories(
 
 
 
-add_library(ads STATIC
-	${ADS_TARGET_FILES}
-)
+add_library(ads STATIC ${ADS_TARGET_FILES})
+set_property(TARGET ads PROPERTY CXX_STANDARD 11)
 
 target_link_directories(ads PUBLIC   ${INCLUDE_LIBRARY} )    
 target_compile_options(ads PUBLIC	${AVDEVICE_CFLAGS})
