@@ -34,9 +34,9 @@
 
 
 
-#define LOG_DEBUG(content,__follow)  char __log[100] = {0}; \
+#define LOG_DEBUG(content,__follow)  { char __log[100] = {0}; \
                                      snprintf(__log,100,content,__follow);  \
-                                     ads_log(__FILE__,__LINE__,"debug",__log)
+                                     ads_log(__FILE__,__LINE__,"debug",__log); }
 
 
 
