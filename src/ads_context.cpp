@@ -86,6 +86,18 @@ add_record_source(AdsContext* context,
     return context->listeners[context->listener_count - 1];
 }
 
+AdsRecordSource*
+get_record_source(AdsContext* context,
+             char* name)
+{
+    for (int i = 0; i < context->listener_count; i++) {
+        if (STRING_COMPARE(name,ads_record_source_get_name(context->listeners[i]))) {
+            return context->listeners[i];
+        }
+    }
+    return NULL;
+}
+
 
 AdsRecordSource*
 add_listener(AdsContext* context,

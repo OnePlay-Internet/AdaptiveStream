@@ -48,6 +48,12 @@ new_ads_listener(char* name,
     return listener;
 }
 
+char* 
+ads_record_source_get_name(AdsRecordSource* source)
+{
+    return source->name;
+}
+
 
 void
 adaptiveThreadListen(AdsRecordSource* lis)

@@ -35,8 +35,20 @@ AdsRecordSource*    add_listener                    (AdsContext* context,
                                                      char* name,
                                                      AdsCallback func);
 
+
+
+
+
+
 AdsRecordSource*    add_record_source               (AdsContext* context,
                                                      char* name);
+
+AdsRecordSource*    get_record_source               (AdsContext* context,
+                                                     char* name);
+
+
+
+
 
 void                ads_push_record                 (AdsRecordSource* lis,
                                                      AdsDataType type,

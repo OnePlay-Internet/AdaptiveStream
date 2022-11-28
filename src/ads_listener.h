@@ -31,5 +31,6 @@ AdsRecordSource* new_ads_listener       (char* name,
                                         AdsEvent* shutdown,
                                         AdsDatabase* db);
 
+char* ads_record_source_get_name        (AdsRecordSource* source);
 
 #endif
