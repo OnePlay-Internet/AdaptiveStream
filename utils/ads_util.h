@@ -13,8 +13,8 @@
 
 #include "ads_datatype.h"
 #include "buffer/ads_buffer.h"
-#include "macros/ads_macros.h"
 #include "logs/ads_log.h"
+#include "macros/ads_macros.h"
 #include "queue/ads_queue.h"
 #include "event/ads_event.h"
 #include "array/ads_buffer_array.h"

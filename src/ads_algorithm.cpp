@@ -45,7 +45,7 @@ print_medium (AdsBufferMap* query_result)
 
             nanosecond* data = (nanosecond*)BUFFER_REF(element,NULL);
 
-            int period = (time - TIME_STOP).count();
+            int period = GET_TIMESTAMP_MILLISEC(time);
 
             total_period += period;
             total += ((*data).count() * period);
@@ -111,8 +111,6 @@ AdsBufferMap*
 rtsp_client_rtt_bandwidth_bitrate(AdsBufferMap* query_result)
 {
     AdsBufferMap* ret = ADS_BUFFER_MAP_CLASS->init();
-    TIME_STOP;
-
     AdsBuffer* buf,*bwbuf = NULL;
     AdsTimeseries* bandwidth_arr,*rtt_arr = NULL;
     {

@@ -38,7 +38,6 @@ callback2(AdsBuffer* buf)
 }
 
 int main(void) {
-    TIME_STOP;
     AdsEvent* shutdown         = NEW_EVENT;
     AdsContext* ctx = new_adaptive_context(shutdown,
                          "print",NULL);
@@ -55,7 +54,8 @@ int main(void) {
         for (;;) {
             nanosecond ex = NANOSEC(i);
             pointer data = (void*)(&ex);
-            ads_push_record(src1,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
+            AdsRecordSource* src = get_record_source(ctx,"rtt");
+            ads_push_record(src,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
 
             SLEEP_MILLISEC(1000);
             i+=5;
@@ -66,7 +66,8 @@ int main(void) {
         for (;;) {
             nanosecond ex = NANOSEC(i);
             pointer data = (void*)(&ex);
-            ads_push_record(src2,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
+            AdsRecordSource* src = get_record_source(ctx,"bandwidth");
+            ads_push_record(src,AdsDataType::ADS_DATATYPE_TIMERANGE_NANOSECOND,0,data);
 
             SLEEP_MILLISEC(1500);
             i+=50;

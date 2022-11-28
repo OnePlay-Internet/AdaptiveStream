@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2022
  * 
  */
-#ifndef __SUNSHINE_MACRO_H__
-#define __SUNSHINE_MACRO_H__
+#ifndef __ADS_MACRO_H__
+#define __ADS_MACRO_H__
 #include <ads_util.h>
 
 #define DEFAULT_BITRATE ( 1000 * 1000 * 30 )
@@ -30,7 +30,18 @@
 
 #define LOG_WARNING(content)   ads_log(__FILE__,__LINE__,"warning",content)
 
-#define LOG_DEBUG(content)   ads_log(__FILE__,__LINE__,"debug",content)
+
+
+
+
+#define LOG_DEBUG(content,__follow)  char __log[100] = {0}; \
+                                     snprintf(__log,100,content,__follow);  \
+                                     ads_log(__FILE__,__LINE__,"debug",__log)
+
+
+
+
+
 
 #define LOG_INFO(content)   ads_log(__FILE__,__LINE__,"info",content)
 
@@ -49,6 +60,7 @@ void ads_do_nothing(void*);
 #define STRING_COMPARE(a,b) string_compare(a,b)
 bool string_compare(char* a, char* b);
 
+#define GET_TIMESTAMP_MILLISEC(x) std::chrono::duration_cast<millisecond>( x - TIME_STOP ).count()
 #define TIME_STOP timestop()
 time_point timestop();
 

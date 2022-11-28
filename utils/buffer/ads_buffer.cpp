@@ -115,6 +115,10 @@ object_init (pointer data,
         free_func = free;
         size = sizeof(int32);
         break;
+    case AdsDataType::ADS_DATATYPE_FLOAT :
+        free_func = free;
+        size = sizeof(float);
+        break;
     case AdsDataType::ADS_DATATYPE_TIMEPOINT :
         free_func = free;
         size = sizeof(time_point);
@@ -129,6 +133,7 @@ object_init (pointer data,
         break;
 
     case AdsDataType::ADS_DATATYPE_STRUCT :
+    case AdsDataType::ADS_DATATYPE_ERROR :
     case AdsDataType::ADS_DATATYPE_BYTEARRAY :
         free_func = free;
         break;
@@ -238,6 +243,9 @@ object_from_pointer(AdsDataType type,
         break;
     case AdsDataType::ADS_DATATYPE_INT32 :
         size = sizeof(int32);
+        break;
+    case AdsDataType::ADS_DATATYPE_FLOAT :
+        size = sizeof(float);
         break;
     case AdsDataType::ADS_DATATYPE_TIMEPOINT :
         size = sizeof(time_point);

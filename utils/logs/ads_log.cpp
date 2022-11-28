@@ -39,7 +39,7 @@ find_from_back(char* str, char* word)
     while (*(str+count) != *word && count > 0) {
         count--;
     }
-    return str + count + 1;
+    return (count != 0) ? str + count + 1 : str;
 }
 
 static bool
@@ -81,11 +81,7 @@ render_log(AdsQueue* array)
         char file_log[36] = {" "};
         file_log[35] = 0;
         snprintf(file_log,35,"FILE: %s:%d",
-#ifndef MINGW
-        find_from_back(err->file,"\\"),
-#else
-        find_from_back(err->file,"/"),
-#endif
+        find_from_back(find_from_back(err->file,"/"),"\\"),
         err->line);
 
         for (int i = 0; i < 35; i++) {
@@ -139,27 +135,17 @@ get_log_queue()
 
 
 void
-get_string_fmt(nanosecond time,
-                char** string)
+get_string_fmt(char** string)
 {
-    int64 min =      std::chrono::duration_cast<minute>(time).count() %1000 %1000 %1000 %1000 %60;
-    int64 sec =      std::chrono::duration_cast<second>(time).count() %1000 %1000 % 1000 % 1000;
-    int64 mili =     std::chrono::duration_cast<millisecond>(time).count() %1000 % 1000 % 1000;
-    int64 micro =    std::chrono::duration_cast<microsecond>(time).count() %1000 % 1000;
-    int64 nano =     std::chrono::duration_cast<nanosecond>(time).count() %1000;
-    snprintf(*string,100,"(min:%d|sec:%d|mili:%d|micro:%d|nano:%d)",min,sec,mili,micro,nano);
+    int64 time = GET_TIMESTAMP_MILLISEC(NOW);
+
+    int64 min =      time / 60000;
+    int64 sec =      ( time / 1000 ) % 60;
+    int64 mili =     time - sec * 1000 - min * 1000 * 60;
+    snprintf(*string,100,"( %dmin | %ds | %dms)",min,sec,mili);
 }
 
-nanosecond 
-get_start_time()
-{
-    static time_point fix;
-    time_point now = NOW;
-    RETURN_ONCE(now - fix);
-    fix = NOW;
 
-    return now - fix;
-}
 
 void ads_log(char* file,
             int line,
@@ -171,8 +157,7 @@ void ads_log(char* file,
 
     char timestr[100] = {0};
     char* temp = timestr;
-    auto time = get_start_time();
-    get_string_fmt(time,&temp);
+    get_string_fmt(&temp);
 
     pointer ptr = (pointer)malloc( sizeof(Err) );  
     memset(ptr,0,sizeof(Err)); 

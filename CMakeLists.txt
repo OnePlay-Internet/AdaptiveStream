@@ -90,5 +90,5 @@ set_target_properties(ads PROPERTIES CXX_STANDARD 17
 
 
 
-add_executable(testa test/main.cpp)
-target_link_libraries(testa ads)
+add_executable(testads test/main.cpp)
+target_link_libraries(testads ads)
