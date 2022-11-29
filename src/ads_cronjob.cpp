@@ -15,11 +15,13 @@
 
 #include <thread>
 #define EVALUATION_INTERVAL 10s
+#define LISTENER_MAX_COUNT 10
 
 
 struct Listener {
     int id;
     char event_name[50];
+    void* data;
 
     AdsCallback callback;
 };
@@ -33,8 +35,7 @@ struct _AdsCronJob {
     std::thread thread;
 
     int listener_count;
-
-    struct Listener listener[10];
+    struct Listener listener[LISTENER_MAX_COUNT];
 };
 
 void cronJobThread(AdsCronJob* job);
@@ -50,6 +51,7 @@ new_cron_job(AdsDatabase* db,
     job->database = db;
     job->process = func;
     job->shutdown = shutdown;
+    job->listener_count = 1;
 
     job->thread = std::thread { cronJobThread , job };
     return job;
@@ -62,9 +64,9 @@ call_listener(AdsCronJob* job,
               char* event,
               AdsBuffer* buf)
 {
-    for (int i = 0; i < job->listener_count; i++) {
+    for (int i = 0; i < LISTENER_MAX_COUNT; i++) {
         if (STRING_COMPARE(event,job->listener[i].event_name)) {
-            job->listener[i].callback(buf);
+            job->listener[i].callback(buf,job->listener[i].data);
             return;
         }
     }
@@ -112,14 +114,36 @@ cronJobThread(AdsCronJob* job)
     }
 }
 
-void
+int
 register_listener(AdsCronJob* job,
                   AdsCallback callback,
-                  char* event)
+                  char* event,
+                  void* user_data)
 {
-    job->listener[job->listener_count].id = job->listener_count;
-    memcpy(job->listener[job->listener_count].event_name,event,strlen(event));
-    job->listener[job->listener_count].callback = callback,
+    for (int i = 0; i < LISTENER_MAX_COUNT; i++) {
+        if (job->listener[i].id == 0) {
 
-    job->listener_count++;
+            memcpy(job->listener[i].event_name,event,strlen(event));
+            job->listener[i].id = job->listener_count;
+            job->listener[i].callback = callback;
+            job->listener[i].data = user_data;
+
+
+            job->listener_count++;
+            return job->listener[i].id;
+        }
+    }
+}
+
+
+void
+remove_listener(AdsCronJob* job,
+                int id)
+{
+    for (int i = 0; i < LISTENER_MAX_COUNT; i++) {
+        if (job->listener[i].id == id) {
+            memset(&job->listener[i],0,sizeof(Listener));
+            return;
+        }
+    }
 }

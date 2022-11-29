@@ -99,10 +99,18 @@ get_record_source(AdsContext* context,
 }
 
 
-AdsRecordSource*
-add_listener(AdsContext* context,
+int
+add_listener_to_ctx(AdsContext* context,
              char* name,
-             AdsCallback func)
+             AdsCallback func,
+             void* user_data)
 {
-    register_listener(context->job,func,name);
+    return register_listener(context->job,func,name,user_data);
+}
+
+void
+remove_listener_from_ctx(AdsContext* context,
+                         int id)
+{
+    return remove_listener(context->job,id);
 }

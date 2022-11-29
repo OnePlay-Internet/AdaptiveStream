@@ -17,7 +17,7 @@ typedef struct _AdsRecordSource AdsRecordSource;
 
 typedef struct _AdsContext AdsContext;
 
-typedef void (*AdsCallback) (AdsBuffer* buf);
+typedef void (*AdsCallback) (AdsBuffer* buf, void* data);
 
 
 /**
@@ -31,11 +31,14 @@ AdsContext*         new_adaptive_context            (AdsEvent* shutdown,
                                                     char* application,
                                                     AdsProcessFunc function);
 
-AdsRecordSource*    add_listener                    (AdsContext* context,
+int                 add_listener_to_ctx             (AdsContext* context,
                                                      char* name,
-                                                     AdsCallback func);
+                                                     AdsCallback func,
+                                                     void* user_data);
 
 
+void                 remove_listener_from_ctx       (AdsContext* context,
+                                                     int id);
 
 
 

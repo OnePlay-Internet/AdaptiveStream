@@ -25,6 +25,10 @@ AdsCronJob* new_cron_job    (AdsDatabase* db,
                              AdsProcessFunc func,
                              AdsEvent* shutdown);
 
-void register_listener      (AdsCronJob* job,
+int register_listener      (AdsCronJob* job,
                              AdsCallback callback,
-                             char* event);
+                             char* event,
+                             void* data);
+
+void remove_listener        (AdsCronJob* job,
+                            int id);

@@ -45,8 +45,8 @@ int main(void) {
     AdsRecordSource* src1 = add_record_source(ctx,"rtt");
     AdsRecordSource* src2 = add_record_source(ctx,"bandwidth");
 
-    add_listener(ctx,"bandwidth",callback1);
-    add_listener(ctx,"rtt",callback2);
+    add_listener_to_ctx(ctx,"bandwidth",callback1,NULL);
+    add_listener_to_ctx(ctx,"rtt",callback2,NULL);
 
 
     auto producertt = [&](){
