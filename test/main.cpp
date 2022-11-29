@@ -15,7 +15,7 @@
 
 
 static void 
-callback1(AdsBuffer* buf)
+callback1(AdsBuffer* buf,void* u)
 {
     int* data = (int*)BUFFER_REF(buf,NULL);
     if(*data)
@@ -26,7 +26,7 @@ callback1(AdsBuffer* buf)
     BUFFER_UNREF(buf);
 }
 static void 
-callback2(AdsBuffer* buf)
+callback2(AdsBuffer* buf,void* u)
 {
     int* data = (int*)BUFFER_REF(buf,NULL);
     if(*data)
