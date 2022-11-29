@@ -52,7 +52,7 @@ DatabaseCleanThread(AdsDatabase* database)
     while (!IS_INVOKED(database->shutdown)) {
         SLEEP_MILLISEC(1000);
 
-        LOG_DEBUG("cleaning database, current length: %d",database->length);
+        // LOG_DEBUG("cleaning database, current length: %d",database->length);
 
         time_point now = NOW;
 
